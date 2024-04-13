@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxsc.goods.mapper.EvaluteMapper">
+
+  <resultMap id="BaseResultMap" type="com.lxsc.goods.model.Evalute">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="time" jdbcType="BIGINT" property="time" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="goods_id" jdbcType="BIGINT" property="goodsId" />
+    <result column="nick_name" jdbcType="VARCHAR" property="nickName"/>
+    <result column="head_portrait" jdbcType="VARCHAR" property="headPortrait"/>
+    <collection property="evaluteImgList"
+                ofType="com.lxsc.goods.model.EvaluteImg"
+                column="{evaluteId=id}"
+                select="selectEvaluteImgByEvaluteId">
+    </collection>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, content, score, time, user_id, goods_id
+  </sql>
+
+  <select id="countEvaluteByGoodsId" resultType="Long">
+    select count(*) from g_evalute
+    where
+          goods_id=#{goodsId}
+          <if test='evaluteLevel=="A"'>
+            and score between 4 and 5
+          </if>
+          <if test='evaluteLevel=="B"'>
+            and score=3
+          </if>
+          <if test='evaluteLevel=="C"'>
+            and score between 1 and 2
+          </if>
+  </select>
+
+  <select id="selectEvalutePage" resultMap="BaseResultMap">
+    select
+      e.*,u.nick_name,ui.head_portrait
+    from
+      g_evalute e
+        inner join
+      u_user u
+      on
+        e.user_id=u.id
+        left join
+      u_user_info ui
+      on
+        u.id=ui.user_id
+    where
+      e.goods_id=#{goodsId}
+      <if test='evaluteLevel=="A"'>
+        and score between 4 and 5
+      </if>
+      <if test='evaluteLevel=="B"'>
+        and score=3
+      </if>
+      <if test='evaluteLevel=="C"'>
+        and score between 1 and 2
+      </if>
+    <!--输出记录的初始位置和偏移量-->
+      limit ${skipNum},${pageSize}
+  </select>
+
+  <!--带图评价分支中的方法begin，封装返回数据的格式-->
+  <resultMap id="BaseResultMapImg" type="com.lxsc.goods.model.Evalute">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="time" jdbcType="BIGINT" property="time" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="goods_id" jdbcType="BIGINT" property="goodsId" />
+    <result column="nick_name" jdbcType="VARCHAR" property="nickName"/>
+    <result column="head_portrait" jdbcType="VARCHAR" property="headPortrait"/>
+    <collection property="evaluteImgList"
+                ofType="com.lxsc.goods.model.EvaluteImg">
+                <id column="eiid" property="id"></id>
+                <result column="image_url" property="imageUrl"/>
+    </collection>
+  </resultMap>
+
+  <select id="countEvaluteHaveImgByGoodsId" resultType="Long">
+    select count(e.id)
+    from
+        g_evalute e
+    inner join
+        (select evalute_id from g_evalute_img group by evalute_id) img
+    on
+        e.id=img.evalute_id
+    where
+        goods_id=#{goodsId}
+  </select>
+
+  <select id="selectEvaluteHaveImgPage" resultMap="BaseResultMapImg">
+    select
+      e.*,u.nick_name,ui.head_portrait,ei.id eiid,ei.image_url
+    from
+      g_evalute e
+    inner join
+      u_user u
+    on
+      e.user_id=u.id
+    left join
+      u_user_info ui
+    on
+      u.id=ui.user_id
+    inner join
+      g_evalute_img ei
+    on
+      e.id=ei.evalute_id
+    where
+      e.goods_id=#{goodsId}
+      limit ${skipNum},${pageSize}
+  </select>
+  <!--带图评价分支中的方法end-->
+
+  <!--单独的一个函数，前端js直接通过controller调用，返回键值对-->
+  <select id="countEvaluteNum" resultType="map">
+    select
+        (select count(*) from g_evalute where goods_id=#{goodsId} and score Between 4 and 5) A,
+        (select count(*) from g_evalute where goods_id=#{goodsId} and score=3) B,
+        (select count(*) from g_evalute where goods_id=#{goodsId} and score Between 1 and 2) C,
+        (select count(e.id) from g_evalute e inner join (select evalute_id from g_evalute_img group by evalute_id) img on e.id=img.evalute_id where goods_id=#{goodsId}) img
+  </select>
+
+  <select id="selectEvaluteImgByEvaluteId" resultType="com.lxsc.goods.model.EvaluteImg">
+    select image_url imageUrl from g_evalute_img where evalute_id=#{evaluteId}
+  </select>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from g_evalute
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from g_evalute
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.lxsc.goods.model.Evalute">
+    insert into g_evalute (id, content, score, 
+      time, user_id, goods_id)
+    values (#{id,jdbcType=BIGINT}, #{content,jdbcType=VARCHAR}, #{score,jdbcType=INTEGER}, 
+      #{time,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{goodsId,jdbcType=BIGINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.lxsc.goods.model.Evalute">
+    insert into g_evalute
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+      <if test="score != null">
+        score,
+      </if>
+      <if test="time != null">
+        time,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="goodsId != null">
+        goods_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="score != null">
+        #{score,jdbcType=INTEGER},
+      </if>
+      <if test="time != null">
+        #{time,jdbcType=BIGINT},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="goodsId != null">
+        #{goodsId,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.lxsc.goods.model.Evalute">
+    update g_evalute
+    <set>
+      <if test="content != null">
+        content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="score != null">
+        score = #{score,jdbcType=INTEGER},
+      </if>
+      <if test="time != null">
+        time = #{time,jdbcType=BIGINT},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="goodsId != null">
+        goods_id = #{goodsId,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.lxsc.goods.model.Evalute">
+    update g_evalute
+    set content = #{content,jdbcType=VARCHAR},
+      score = #{score,jdbcType=INTEGER},
+      time = #{time,jdbcType=BIGINT},
+      user_id = #{userId,jdbcType=BIGINT},
+      goods_id = #{goodsId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+</mapper>

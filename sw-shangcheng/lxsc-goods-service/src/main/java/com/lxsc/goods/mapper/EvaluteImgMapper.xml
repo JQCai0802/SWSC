@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxsc.goods.mapper.EvaluteImgMapper">
+  <resultMap id="BaseResultMap" type="com.lxsc.goods.model.EvaluteImg">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="image_url" jdbcType="VARCHAR" property="imageUrl" />
+    <result column="evalute_id" jdbcType="BIGINT" property="evaluteId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, image_url, evalute_id
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from g_evalute_img
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from g_evalute_img
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.lxsc.goods.model.EvaluteImg">
+    insert into g_evalute_img (id, image_url, evalute_id
+      )
+    values (#{id,jdbcType=BIGINT}, #{imageUrl,jdbcType=VARCHAR}, #{evaluteId,jdbcType=BIGINT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.lxsc.goods.model.EvaluteImg">
+    insert into g_evalute_img
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="imageUrl != null">
+        image_url,
+      </if>
+      <if test="evaluteId != null">
+        evalute_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="imageUrl != null">
+        #{imageUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="evaluteId != null">
+        #{evaluteId,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.lxsc.goods.model.EvaluteImg">
+    update g_evalute_img
+    <set>
+      <if test="imageUrl != null">
+        image_url = #{imageUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="evaluteId != null">
+        evalute_id = #{evaluteId,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.lxsc.goods.model.EvaluteImg">
+    update g_evalute_img
+    set image_url = #{imageUrl,jdbcType=VARCHAR},
+      evalute_id = #{evaluteId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

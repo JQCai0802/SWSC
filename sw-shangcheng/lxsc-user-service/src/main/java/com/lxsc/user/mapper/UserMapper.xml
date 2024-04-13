@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxsc.user.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.lxsc.user.model.User">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="phone" jdbcType="CHAR" property="phone" />
+    <result column="password" jdbcType="CHAR" property="password" />
+    <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, phone, password, nick_name
+  </sql>
+  <select id="selectUserByPhone" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from u_user
+    where
+        phone=#{phone}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from u_user
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.lxsc.user.model.User">
+    insert into u_user (id, phone, password, 
+      nick_name)
+    values (#{id,jdbcType=BIGINT}, #{phone,jdbcType=CHAR}, #{password,jdbcType=CHAR}, 
+      #{nickName,jdbcType=VARCHAR})
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.lxsc.user.model.User">
+    insert into u_user
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+      <if test="password != null">
+        password,
+      </if>
+      <if test="nickName != null">
+        nick_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=CHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=CHAR},
+      </if>
+      <if test="nickName != null">
+        #{nickName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+--     向具有自增列的表中插入值（identity属性），在执行完插入操作后返回该条数据的id。
+    <selectKey keyColumn="id" keyProperty="id" resultType="long" order="AFTER">
+      select @@identity
+    </selectKey>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.lxsc.user.model.User">
+    update u_user
+    <set>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=CHAR},
+      </if>
+      <if test="password != null">
+        password = #{password,jdbcType=CHAR},
+      </if>
+      <if test="nickName != null">
+        nick_name = #{nickName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.lxsc.user.model.User">
+    update u_user
+    set phone = #{phone,jdbcType=CHAR},
+      password = #{password,jdbcType=CHAR},
+      nick_name = #{nickName,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+</mapper>
